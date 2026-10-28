@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Travel_Logger_API_api_tvrdna.Models;
+namespace Travel_Logger_API_api_leglue.Models;
 
 public class Recommendation
 {
