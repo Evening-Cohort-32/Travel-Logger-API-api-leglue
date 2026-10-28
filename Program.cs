@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
-using TravelLogger;
+using Travel_Logger_API_api_leglue.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

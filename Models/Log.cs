@@ -9,6 +9,6 @@ public class Log
     public int UserId { get; set; }
     [Required]
     public int CityId { get; set; }
-    public string LogBody { get; set; }
+    public string? LogBody { get; set; }
 
 }
