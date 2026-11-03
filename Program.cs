@@ -35,6 +35,8 @@ app.UseCors(options =>
 });
 
 // Add all endpoints here
+
+// User Endpoints
 app.MapPost("/api/users", (TravelLoggerDbContext db, User user) =>
 {
     if (db.Users.Any(u => u.Email == user.Email))
@@ -62,6 +64,141 @@ app.MapGet("/api/users/signin/{email}", (TravelLoggerDbContext db, string email)
         Email = user.Email
     });
 });
+
+app.MapGet("/api/users/{id}", (TravelLoggerDbContext db, int id) =>
+{
+    return db.Users
+    .Include(u => u.Recommendations)
+    .Include(u => u.Logs)
+    .Select(u => new UserDTO
+    {
+        Id = u.Id,
+        Username = u.Username,
+        Email = u.Email,
+        Description = u.Description,
+        ImageUrl = u.ImageUrl,
+        Recommendations = u.Recommendations.Select(r => new RecommendationDTO
+        {
+            Id = r.Id,
+            Name = r.Name,
+            UserId = r.UserId,
+            CityId = r.CityId,
+            RecommendationBody = r.RecommendationBody
+        }).ToList(),
+        Logs = u.Logs.Select(l => new LogDTO
+        {
+            Id = l.Id,
+            UserId = l.UserId,
+            CityId = l.CityId,
+            LogBody = l.LogBody
+        }).ToList()
+    })
+    .Single(u => u.Id == id);
+});
+
+app.MapPut("/api/users/{id}", (TravelLoggerDbContext db, int id, int userId, User user) =>
+{
+    if (id != userId)
+    {
+        return Results.StatusCode(403);
+    }
+
+    User userToUpdate = db.Users.SingleOrDefault(u => u.Id == id);
+    if (userToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+
+    userToUpdate.Description = user.Description;
+    userToUpdate.ImageUrl = user.ImageUrl;
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+app.MapGet("/api/cities/{cityId}/users", (TravelLoggerDbContext db, int cityId) =>
+{
+    // List users by city (based on their most recent log)
+});
+
+// City Endpoints
+// Users, Logs, Recommendations
+app.MapGet("/api/cities", (TravelLoggerDbContext db) =>
+{
+    return db.Cities
+    .Include(c => c.Users)
+    .Include(c => c.Logs)
+    .Include(c => c.Recommendations)
+    .Select(c => new CityDTO
+    {
+        Id = c.Id,
+        Name = c.Name,
+        Users = c.Users.Select(u => new UserDTO
+        {
+            Id = u.Id,
+            Username = u.Username,
+            Email = u.Email,
+            Description = u.Description,
+            ImageUrl = u.ImageUrl
+        }).ToList(),
+        Logs = c.Logs.Select(l => new LogDTO
+        {
+            Id = l.Id,
+            UserId = l.UserId,
+            CityId = l.CityId,
+            LogBody = l.LogBody
+        }).ToList(),
+        Recommendations = c.Recommendations.Select(r => new RecommendationDTO
+        {
+            Id = r.Id,
+            Name = r.Name,
+            UserId = r.UserId,
+            CityId = r.CityId,
+            RecommendationBody = r.RecommendationBody
+        }).ToList()
+
+    }).ToList();
+});
+
+app.MapGet("/api/cities/{id}", (TravelLoggerDbContext db, int id) =>
+{
+    return db.Cities
+    .Include(c => c.Users)
+    .Include(c => c.Logs)
+    .Include(c => c.Recommendations)
+    .Select(c => new CityDTO
+    {
+        Id = c.Id,
+        Name = c.Name,
+        Users = c.Users.Select(u => new UserDTO
+        {
+            Id = u.Id,
+            Username = u.Username,
+            Email = u.Email,
+            Description = u.Description,
+            ImageUrl = u.ImageUrl
+        }).ToList(),
+        Logs = c.Logs.Select(l => new LogDTO
+        {
+            Id = l.Id,
+            UserId = l.UserId,
+            CityId = l.CityId,
+            LogBody = l.LogBody
+        }).ToList(),
+        Recommendations = c.Recommendations.Select(r => new RecommendationDTO
+        {
+            Id = r.Id,
+            Name = r.Name,
+            UserId = r.UserId,
+            CityId = r.CityId,
+            RecommendationBody = r.RecommendationBody
+        }).ToList()
+
+    }).Single(c => c.Id == id);
+
+});
+
+// Log Endpoints
+
 
 app.MapPut("/api/logs/{id}", (TravelLoggerDbContext db, int id, int userId, Log log) =>
 {
@@ -98,23 +235,8 @@ app.MapDelete("/api/logs/{id}", (TravelLoggerDbContext db, int id, int userId) =
     return Results.NoContent();
 });
 
-app.MapPut("/api/users/{id}", (TravelLoggerDbContext db, int id, int userId, User user) =>
-{
-    if (id != userId)
-    {
-        return Results.StatusCode(403);
-    }
 
-    User userToUpdate = db.Users.SingleOrDefault(u => u.Id == id);
-    if (userToUpdate == null)
-    {
-        return Results.NotFound();
-    }
 
-    userToUpdate.Description = user.Description;
-    userToUpdate.ImageUrl = user.ImageUrl;
-    db.SaveChanges();
-    return Results.NoContent();
-});
+// User endpoints
 
 app.Run();
