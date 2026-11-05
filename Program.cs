@@ -199,6 +199,13 @@ app.MapGet("/api/cities/{id}", (TravelLoggerDbContext db, int id) =>
 
 // Log Endpoints
 
+app.MapPost("/api/logs", (TravelLoggerDbContext db, Log log) =>
+{
+    db.Logs.Add(log);
+    db.SaveChanges();
+    return Results.Created($"/api/logs/{log.Id}", log);
+});
+
 
 app.MapPut("/api/logs/{id}", (TravelLoggerDbContext db, int id, int userId, Log log) =>
 {
@@ -234,6 +241,32 @@ app.MapDelete("/api/logs/{id}", (TravelLoggerDbContext db, int id, int userId) =
     db.SaveChanges();
     return Results.NoContent();
 });
+
+app.MapGet("/api/users/{userId}/logs", (TravelLoggerDbContext db, int userId) =>
+{
+    List<Log> Logs = db.Logs.Where(l => l.UserId == userId).ToList();
+
+    if (Logs.Count() == 0)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(Logs);
+});
+
+app.MapGet("/api/cities/{cityId}/logs", (TravelLoggerDbContext db, int cityId) =>
+{
+    List<Log> Logs = db.Logs.Where(l => l.CityId == cityId).ToList();
+
+    if (Logs.Count() == 0)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(Logs);
+});
+
+
 
 
 
