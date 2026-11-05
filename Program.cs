@@ -121,7 +121,6 @@ app.MapGet("/api/cities/{cityId}/users", (TravelLoggerDbContext db, int cityId) 
 });
 
 // City Endpoints
-// Users, Logs, Recommendations
 app.MapGet("/api/cities", (TravelLoggerDbContext db) =>
 {
     return db.Cities
@@ -244,32 +243,57 @@ app.MapDelete("/api/logs/{id}", (TravelLoggerDbContext db, int id, int userId) =
 
 app.MapGet("/api/users/{userId}/logs", (TravelLoggerDbContext db, int userId) =>
 {
-    List<Log> Logs = db.Logs.Where(l => l.UserId == userId).ToList();
-
-    if (Logs.Count() == 0)
+    return db.Logs
+    .Where(l => l.UserId == userId)
+    .Select(l => new LogDTO
     {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(Logs);
+        Id = l.Id,
+        UserId = l.UserId,
+        CityId = l.CityId,
+        LogBody = l.LogBody
+    });
 });
 
 app.MapGet("/api/cities/{cityId}/logs", (TravelLoggerDbContext db, int cityId) =>
 {
-    List<Log> Logs = db.Logs.Where(l => l.CityId == cityId).ToList();
-
-    if (Logs.Count() == 0)
+    return db.Logs
+    .Where(l => l.CityId == cityId)
+    .Select(l => new LogDTO
     {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(Logs);
+        Id = l.Id,
+        UserId = l.UserId,
+        CityId = l.CityId,
+        LogBody = l.LogBody
+    });
 });
 
 
+// Recommendation Endpoints
 
+app.MapPost("/api/recommendations", (TravelLoggerDbContext db, Recommendation recommendation) =>
+{
+    db.Recommendations.Add(recommendation);
+    db.SaveChanges();
+    return Results.Created($"/api/logs/{recommendation.Id}", recommendation);
+});
 
+app.MapGet("/api/cities/{cityId}/recommendations", (TravelLoggerDbContext db, int cityId) =>
+{
+    return db.Recommendations
+    .Where(r => r.CityId == cityId)
+    .Select(r => new RecommendationDTO
+    {
+        Id = r.Id,
+        Name = r.Name,
+        UserId = r.UserId,
+        CityId = r.CityId,
+        RecommendationBody = r.RecommendationBody
+    });
+});
 
-// User endpoints
+app.MapGet("/api/recommendations/{id}", (TravelLoggerDbContext db, int id) =>
+{
+    // code here
+});
 
 app.Run();
